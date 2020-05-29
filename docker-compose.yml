@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  traefik:
+    image: traefik:v2.2
+    command: --providers.docker --entrypoints.web.address=:3000
+    ports:
+      - 3000:3000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # - /run/user/1000/docker.sock:/var/run/docker.sock # rootless docker
+
+  app1:
+    build:
+      context: .
+      target: app1
+    labels:
+      traefik.http.routers.app1.rule: Host(`app1.localhost`)
+      traefik.http.services.app1.loadbalancer.server.port: 3000
+
+  app2:
+    build:
+      context: .
+      target: app2
+    labels:
+      traefik.http.routers.app2.rule: Host(`app2.localhost`)
+      traefik.http.services.app2.loadbalancer.server.port: 3000
